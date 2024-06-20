@@ -1,4 +1,4 @@
-module go_shop
+module my_shop
 
 go 1.22.4
 
