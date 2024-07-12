@@ -1,29 +1,54 @@
 package main
 
 import (
-	"fmt"
 	"log"
+
 	"my_shop/internal/config"
+	"my_shop/internal/models"
 	routers "my_shop/internal/routers"
 	// "github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Đặt chế độ của Gin framework thành release mode
+	// Switch to "release" mode in production.
 	// gin.SetMode(gin.ReleaseMode)
 
-	// Tạo một instance của service sử dụng hàm New từ package config
-	service := config.New()
+	// Initialize MySQL service
+	mysqlService := config.New()
 
-	// check connect mysql
-	healthStats := service.Health()
-	for key, value := range healthStats {
-		fmt.Printf("%s: %s\n", key, value)
+	// Initialize MongoDB service
+	mongoService, err := config.NewMongoDBService()
+	if err != nil {
+		log.Fatalf("Failed to initialize MongoDB service: %v", err)
 	}
 
-	defer func() {// close connect to mySql
-		if err := service.Close(); err != nil {
-			log.Fatalf("Error closing the database connection: %v", err)
+	// Perform helth check
+	sqlHealth := mysqlService.Health()
+	log.Printf("MySQL connection established")
+	for key, value := range sqlHealth {
+		log.Printf("%s: %s\n", key, value)
+	}
+
+	// Initialize and migrate models
+	err = models.InitializeDB(mysqlService.db())
+	if err != nil {
+		panic(err)
+	}
+
+	mongoHealth := mongoService.Health()
+	log.Printf("MongoDB connection established")
+	for key, value := range mongoHealth {
+		log.Printf("%s: %s\n", key, value)
+	}
+
+	// Close connections when done
+	defer func() {
+		if err := mysqlService.Close(); err != nil {
+			log.Fatalf("Failed to close MySQL connection: %v", err)
+		}
+
+		if err := mongoService.Close(); err != nil {
+			log.Fatalf("Failed to close MongoDB connection: %v", err)
 		}
 	}()
 

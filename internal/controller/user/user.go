@@ -1,6 +1,7 @@
 package user
 
 import (
+	// "my_shop/internal/service/user"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,17 +14,8 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user_id": userID, "name": "Tien"})
 }
 
-// create user
+// CreateUser handles the creation of a new user
 func CreateUser(c *gin.Context) {
-	var user struct {
-		Name string `json:"name"`
-	}
-
-	if err := c.ShouldBindJSON(&user); err!= nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-
-	//service
-	c.JSON(http.StatusOK, gin.H{"message": "User created", "user": user})
+    // statusCode, res := user.CreateUser(c)
+    // c.JSON(statusCode, res)
 }
