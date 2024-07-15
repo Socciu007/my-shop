@@ -1,21 +1,19 @@
 package user
 
 import (
-	// "my_shop/internal/service/user"
+	"my_shop/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-// get user information
-func GetUser(c *gin.Context) {
-	userID := c.Param("id")
-	//service
-	c.JSON(http.StatusOK, gin.H{"user_id": userID, "name": "Tien"})
-}
-
-// CreateUser handles the creation of a new user
-func CreateUser(c *gin.Context) {
-    // statusCode, res := user.CreateUser(c)
-    // c.JSON(statusCode, res)
+// GetAllUsersHandler xử lý request GET /api/users để lấy danh sách tất cả người dùng
+func GetAllUsers(c *gin.Context) {
+	c.JSON(http.StatusInternalServerError, gin.H{"status": 0, "error": "err.Error()"})
+    users, err := service.GetAllUsers()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"status": 0, "error": err.Error()})
+        return
+    }
+    c.JSON(http.StatusOK, gin.H{"status": 1, "message": "Get information of all users successfully", "data": users})
 }

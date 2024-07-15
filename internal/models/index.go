@@ -5,26 +5,20 @@ import (
 )
 
 // InitializeDB initializes the database and migrates all models.
-func InitializeDB(db *gorm.DB) error {
-	// Migrate each model
-	if err := db.AutoMigrate(
-		&Users{},
-		// &Product{},
-		// &Order{},
-	); err != nil {
-		return err
-	}
+func InitializeDB(db *gorm.DB) {
+	// Migrate your models here
+	db.AutoMigrate(
+		&Users{}, 
+		// &Product{}
+	)
 
-	// Setup model associations
-	if err := setupAssociations(db); err != nil {
-		return err
-	}
-
-	return nil
+	// Add associations if needed
+	SetupAssociations(db)
 }
 
 // setupAssociations sets up associations between models.
-func setupAssociations(db *gorm.DB) error {
+func SetupAssociations(db *gorm.DB) {
 	// Add associations between models here
-	return nil
+	// db.Model(&Store{}).Association("Products")
+	// db.Model(&Product{}).BelongsTo(&Store{})
 }

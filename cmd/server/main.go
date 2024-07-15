@@ -2,25 +2,19 @@ package main
 
 import (
 	"log"
-
 	"my_shop/internal/config"
 	"my_shop/internal/models"
 	routers "my_shop/internal/routers"
-	// "github.com/gin-gonic/gin"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// Switch to "release" mode in production.
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 
 	// Initialize MySQL service
 	mysqlService := config.New()
-
-	// Initialize MongoDB service
-	mongoService, err := config.NewMongoDBService()
-	if err != nil {
-		log.Fatalf("Failed to initialize MongoDB service: %v", err)
-	}
 
 	// Perform helth check
 	sqlHealth := mysqlService.Health()
@@ -29,12 +23,16 @@ func main() {
 		log.Printf("%s: %s\n", key, value)
 	}
 
-	// Initialize and migrate models
-	err = models.InitializeDB(mysqlService.db())
+	db := mysqlService.GetDB()
+	models.InitializeDB(db)
+
+	// Initialize MongoDB service
+	mongoService, err := config.NewMongoDBService()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to initialize MongoDB service: %v", err)
 	}
 
+	// Perform health check of mongodb connection
 	mongoHealth := mongoService.Health()
 	log.Printf("MongoDB connection established")
 	for key, value := range mongoHealth {
