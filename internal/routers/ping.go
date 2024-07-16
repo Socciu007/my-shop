@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"my_shop/internal/controller/ping"
+	"my_shop/internal/controllers/ping"
 
 	"github.com/gin-gonic/gin"
 )

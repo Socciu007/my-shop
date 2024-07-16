@@ -8,20 +8,18 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func SetupRouter() *gin.Engine {
-	// Ensure the log directory exists
-	if err := os.MkdirAll("internal/log", 0755); err != nil {
-		log.Fatalf("Failed to create log directory: %v", err)
-	}
-
+func SetupRouter(db *gorm.DB) *gin.Engine {
 	// Open (or create) the debug.log file for logging
 	f, err := os.OpenFile("internal/log/debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatalf("Failed to open log file: %v", err)
 	}
 	defer f.Close()
+
+	log.SetOutput(f)
 
 	// Create new logger use debug.log file
 	logger := log.New(f, "", log.LstdFlags)
@@ -65,7 +63,7 @@ func SetupRouter() *gin.Engine {
 
 	// Register sub router
 	PingRouter(router)
-	UserRouter(router)
+	UserRouter(router, db)
 	V1Router(router)
 
 	return router

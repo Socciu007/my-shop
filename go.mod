@@ -9,7 +9,12 @@ require (
 	nhooyr.io/websocket v1.8.11
 )
 
-require github.com/gin-contrib/gzip v1.0.1 // indirect
+require (
+	github.com/gin-contrib/gzip v1.0.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
+	gorm.io/driver/sqlite v1.5.6 // indirect
+)
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect

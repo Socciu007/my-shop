@@ -50,6 +50,6 @@ func main() {
 		}
 	}()
 
-	router := routers.SetupRouter()
+	router := routers.SetupRouter(db)
 	router.Run(":8080")
 }
