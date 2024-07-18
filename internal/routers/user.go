@@ -4,19 +4,22 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	uc "my_shop/internal/controllers/user"
+	"my_shop/internal/controllers"
 	"my_shop/internal/middlewares"
-	us "my_shop/internal/services/user"
+	"my_shop/internal/services"
 )
 
 func UserRouter(r *gin.Engine, db *gorm.DB) {
 
-	userService := us.NewUserService(db)
-	userController := uc.NewUserController(&userService)
+	userService := services.NewUserService(db)
+	userController := controllers.NewUserController(&userService)
 
 	userGroup := r.Group("/api")
 	{
 		userGroup.GET("/get-users", userController.GetAllUsers)
+		userGroup.GET("/get-user/:id", userController.GetUserByID)
 		userGroup.POST("/create-user", middlewares.ValidationUser(), userController.CreateUser)
+		userGroup.PATCH("/update-user/:id", userController.UpdateUser)
+		userGroup.DELETE("/delete-user/:id", userController.DeleteUser)
 	}
 }

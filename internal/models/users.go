@@ -12,7 +12,7 @@ type Users struct {
     Username  string    `gorm:"unique;not null" json:"username" validate:"required,min=5,max=50"`
     Email     string    `gorm:"unique;not null" json:"email" validate:"required,email"`
     Password  string    `gorm:"not null" json:"password" validate:"required,min=8"`
-    Role      string    `gorm:"default:user"`
+    Role      string    `gorm:"default:Customer"`
     CreatedAt time.Time `gorm:"autoCreateTime"`
     UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }

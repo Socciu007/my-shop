@@ -1,31 +1,63 @@
 package utils
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
+type APIResponse struct {
+    Status  int      `json:"status"`
+    Message string      `json:"message"`
+    Data    interface{} `json:"data,omitempty"`
+    Error   string      `json:"error,omitempty"`
+}
+
 // response function when interacting with a client via HTTP
-func RespondForHTTP(c *gin.Context, status string, message string, err error, data interface{}) {
-    switch status {
-		case "OK":
+func RespondStanders(c *gin.Context, statusCode int, message string, err string, data interface{}) {
+    switch statusCode {
+		case 200:
 			if data == nil {
-				c.JSON(http.StatusOK, gin.H{"status": 1, "message": message})
+				c.JSON(statusCode, APIResponse{
+					Status: 1,
+					Message: message,
+				})
 			} else {
-				c.JSON(http.StatusOK, gin.H{"status": 1, "message": message, "data": data})
+				c.JSON(statusCode, APIResponse{
+					Status: 1,
+					Message: message,
+                    Data:    data,
+				})
 			}
-		case "BadRequest":
-			c.JSON(http.StatusBadRequest, gin.H{"status": 0, "message": message, "error": err.Error()})
-		case "Unauthorized":
-			c.JSON(http.StatusUnauthorized, gin.H{"status": 0, "message": message, "error": err.Error()})
-		case "NotFound":
-			c.JSON(http.StatusNotFound, gin.H{"status": 0, "message": message, "error": err.Error()})
-		case "Conflict":
-			c.JSON(http.StatusConflict, gin.H{"status": 0, "message": message, "error": err.Error()})
-		case "InternalServerError":
-			c.JSON(http.StatusInternalServerError, gin.H{"status": 0, "message": "Internal Server Error", "error": err.Error()})
+		case 400:
+			c.JSON(statusCode, APIResponse{
+				Status: 0,
+                Message: message,
+                Error:   err,
+			})
+		case 401:
+			c.JSON(statusCode, APIResponse{
+				Status: 0,
+                Message: message,
+                Error:   err,
+			})
+		case 404:
+			c.JSON(statusCode, APIResponse{
+				Status: 0,
+                Message: message,
+                Error:   err,
+			})
+		case 409:
+			c.JSON(statusCode, APIResponse{
+				Status: 0,
+                Message: message,
+                Error:   err,
+			})
+		case 500:
+			c.JSON(statusCode, APIResponse{
+				Status: 0,
+                Message: "Internal Server Error",
+                Error:   err,
+			})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"status": 0, "message": "Internal Server Error"})
+			c.JSON(statusCode, gin.H{"status": 0, "message": "Internal Server Error"})
     }
 }

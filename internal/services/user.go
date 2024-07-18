@@ -1,4 +1,4 @@
-package user
+package services
 
 import (
 	"fmt"
@@ -27,56 +27,70 @@ func (us *UserService) GetAllUsers() ([]models.Users, error) {
 }
 
 // logic to create a new user
-func (us *UserService) CreateUser(user *models.Users) (string, error) {
+func (us *UserService) CreateUser(user *models.Users) (int, error) {
     var existUser models.Users
 
     //check exist user already email in database
     if err := us.db.Where("email =?", user.Email).First(&existUser).Error; err == nil {
-        return "BadRequest", fmt.Errorf("user already exists")
+        return 400, fmt.Errorf("user already exists")
     }
 
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost) 
     if err != nil {
-        return "BadRequest", err
+        return 400, err
     }
     user.Password = string(hashedPassword)
     user.ID = uuid.New().String()
 
-    return "InternalServerError", us.db.Create(user).Error
+    return 500, us.db.Create(user).Error
 }
 
 // logic to update a user 
-func (us *UserService) UpdateUser(id string, updateFields models.Users) (*models.Users, status, error) {
+func (us *UserService) UpdateUser(id string, updateFields models.Users) (models.Users, int, error) {
     var user models.Users
 
     // Find user in database by ID
     if err := us.db.Where("id = ?", id).First(&user).Error; err != nil {
-        return &user, "BadRequest", err
+        return user, 400, err
     }
 
     // Update information user from map updateFields
     if err := us.db.Model(&user).Updates(updateFields).Error; err != nil {
-        return &user, "InternalServerError", err
+        return user, 500, err
     }
 
-    return &user, "OK", nil
+    return user, 200, nil
 }
 
 
 // logic to delete a user
-func (us *UserService) DeleteUser(id string) (string, error) {
+func (us *UserService) DeleteUser(id string) (int, error) {
     var user models.Users
     //check if user exists
     if err := us.db.Where("id =?", id).First(&user).Error; err!= nil {
-        return "BadRequest", err
+        return 400, err
     }
 
     //Delete user from database
     if err := us.db.Where("id =?", id).Delete(&user).Error; err!= nil {
-        return "InternalServerError", err
+        return 500, err
     }
 
-    return "OK", nil
+    return 200, nil
 }
 
-// Other methods like CreateUser, GetUserByID, UpdateUser, DeleteUser can be defined here
+// logic to get a user
+func (us *UserService) GetUserByID(id string) (models.Users, error) {
+    var user models.Users
+
+    if err := us.db.Where("id =?", id).First(&user).Error; err!= nil {
+        return user, err
+    }
+
+    return user, nil
+}
+
+// logic to delete many users
+// func (us *UserService) DeleteManyUsers(userIDs []string) error {
+
+// }

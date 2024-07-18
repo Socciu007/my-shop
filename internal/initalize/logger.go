@@ -1,0 +1,5 @@
+package initalize
+
+func InitLogger() {
+
+}

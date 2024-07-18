@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+mysql:
+  username: root
+  password: 
+  dbname: my_shop
+  host: localhost
+  port: 3306
+
+mongodb:
+  uri: mongodb://localhost:27017/myshop
+
