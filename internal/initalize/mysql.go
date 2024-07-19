@@ -3,6 +3,7 @@ package initalize
 import (
 	"fmt"
 	"log"
+	"my_shop/global"
 	"my_shop/internal/repo"
 
 	"gorm.io/driver/mysql"
@@ -10,8 +11,7 @@ import (
 )
 
 func InitMySQL() *repo.DatabaseType{
-	mysqlConfig := config.Mysql
-	// fmt.Printf("%+v\n", mysqlConfig)
+	mysqlConfig := global.Config.Mysql
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		mysqlConfig.Username,
 		mysqlConfig.Password,

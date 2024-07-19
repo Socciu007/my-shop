@@ -3,6 +3,7 @@ package initalize
 import (
 	"fmt"
 	"log"
+	"my_shop/global"
 	"my_shop/internal/models"
 	"my_shop/internal/routers"
 )
@@ -11,9 +12,6 @@ func Run() {
 	// load configuration
 	LoadConfig()
 	InitLogger()
-	mysqlConfig := config
-	fmt.Printf("%+v\n", mysqlConfig)
-
 	sqlService := InitMySQL()
 	getDb := sqlService.GetDB()
 	models.InitializeDB(getDb)
@@ -31,7 +29,7 @@ func Run() {
 		}
 	}()
 
-	port := config.Server.Port
+	port := global.Config.Server.Port
 	r := routers.SetupRouter(getDb)
 	r.Run(":" + fmt.Sprintf("%d", port))
 }

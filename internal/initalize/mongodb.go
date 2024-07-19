@@ -3,6 +3,7 @@ package initalize
 import (
 	"context"
 	"log"
+	"my_shop/global"
 	"my_shop/internal/repo"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 )
 
 func InitMongoDB() *repo.ClientType{
-	uri := config.MongoDB.URI
+	uri := global.Config.MongoDB.URI
 	// Set up MongoDB client options
 	clientOptions := options.Client().ApplyURI(uri)
 
