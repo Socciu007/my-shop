@@ -185,4 +185,12 @@ func (uc *UserController) RefreshAccessToken(c *gin.Context) {
         utils.RespondStanders(c, http.StatusNotFound, "Refresh token is required", "Refresh token not found", nil)
         return
     }
+
+    status, accessToken, err := uc.userService.RefreshAccessToken(token.Value)
+    if err!= nil {
+        utils.RespondStanders(c, status, "Refresh access token failed", err.Error(), nil)
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"status": status, "message": "Refresh access token successfully", "access_token": accessToken})
 }

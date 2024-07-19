@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"my_shop/internal/models"
 	"my_shop/internal/utils"
 	"net/http"
@@ -16,23 +17,29 @@ var validate *validator.Validate
 func ValidationUser() gin.HandlerFunc {
     return func(c *gin.Context) {
         var user models.Users
-        validate = validator.New()
+        var confirm struct {
+            ConfirmPassword string `json:"confirmPassword"`
+        }
 
-        if err := c.ShouldBindJSON(&user); err != nil {
+        validate := validator.New()
+
+        // Bind and validate user and ConfirmPassword fields
+        if err := c.ShouldBindJSON(&struct {
+            models.Users
+            ConfirmPassword string `json:"confirmPassword"`
+        }{
+            user,
+            confirm.ConfirmPassword,
+        }); err != nil {
             utils.RespondStanders(c, http.StatusBadRequest, "Invalid request payload", err.Error(), nil)
             c.Abort()
             return
         }
 
-        // Check if ConfirmPassword is present in the request payload
-        if _, exists := c.GetPostForm("ConfirmPassword"); !exists {
-            utils.RespondStanders(c, http.StatusBadRequest, "ConfirmPassword is required", "ConfirmPassword is missing", nil)
-            c.Abort()
-            return
-        }
+        fmt.Printf("%v \n", user)
 
         // Add condition check for confirmPassword with Password
-        if user.Password != c.PostForm("ConfirmPassword") {
+        if user.Password != confirm.ConfirmPassword {
             utils.RespondStanders(c, http.StatusBadRequest, "Password and ConfirmPassword need to match", "Password and ConfirmPassword do not match", nil)
             c.Abort()
             return

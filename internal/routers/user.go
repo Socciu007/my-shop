@@ -22,6 +22,7 @@ func UserRouter(r *gin.Engine, db *gorm.DB) {
 		userGroup.POST("/delete-users", userController.DeleteManyUsers)
 		userGroup.POST("/login", middlewares.ValidationCredentials(), userController.Login)
 		userGroup.POST("/logout", userController.Logout)
+		userGroup.POST("/refresh-token", userController.RefreshAccessToken)
 		userGroup.PATCH("/update-user/:id", userController.UpdateUser)
 		userGroup.DELETE("/delete-user/:id", userController.DeleteUser)
 	}
