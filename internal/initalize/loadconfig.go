@@ -9,6 +9,8 @@ import (
 type Config struct {
 	Mysql   MysqlConfig `mapstructure:"mysql"`
 	MongoDB MongoConfig `mapstructure:"mongodb"`
+	Security SercurityConfig `mapstructure:"security"`
+	Server SercurityConfig `mapstructure:"server"`
 }
 
 type MysqlConfig struct {
@@ -17,6 +19,12 @@ type MysqlConfig struct {
 	Username string `mapstructure:"username"`
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
+}
+
+type SercurityConfig struct {
+	AccessKey string `mapstructure:"accesskey"`
+	RefreshKey string `mapstructure:"refreshkey"`
+	Port int `mapstructure:"port"`
 }
 
 type MongoConfig struct {
@@ -44,4 +52,9 @@ func LoadConfig() {
 	if err := v.Unmarshal(&config); err != nil {
 		panic(fmt.Errorf("unable to decode configuration: %v", err))
 	}
+}
+
+// GetConfig returns the loaded configuration
+func GetConfig() *Config {
+	return &config
 }

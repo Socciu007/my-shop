@@ -31,6 +31,7 @@ func Run() {
 		}
 	}()
 
+	port := config.Server.Port
 	r := routers.SetupRouter(getDb)
-	r.Run(":8080")
+	r.Run(":" + fmt.Sprintf("%d", port))
 }

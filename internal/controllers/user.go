@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"my_shop/internal/models"
 	"my_shop/internal/services"
 	"my_shop/internal/utils"
@@ -106,3 +107,44 @@ func (uc *UserController) GetUserByID(c *gin.Context) {
 
     utils.RespondStanders(c, http.StatusOK, "Get user information successfully", "", user)
 }
+
+// handle request POST /delete-users to delete many users
+func (uc *UserController) DeleteManyUsers(c *gin.Context) {
+    var userIDs []string
+
+    // Bind the request body to the userIDs slice
+    if err := c.ShouldBindJSON(&userIDs); err != nil {
+        utils.RespondStanders(c, http.StatusBadRequest, "Error binding user IDs", err.Error(), nil)
+        return
+    }
+
+    // Check if at least one user ID is provided
+    if len(userIDs) < 1 {
+        utils.RespondStanders(c, http.StatusBadRequest, "At least one user ID is required", "UserIDs is empty", nil)
+        return
+    }
+
+    // Call UserService to delete many users
+    deletedCount, status, err := uc.userService.DeleteManyUsers(userIDs)
+    if err!= nil {
+        utils.RespondStanders(c, status, "Internal Server Error", err.Error(), nil)
+        return
+    }
+
+    utils.RespondStanders(c, status, fmt.Sprintf("Deleted %d user(s) successfully", deletedCount), "", nil)
+}
+
+// handle request POST /login to login system
+// func (uc *UserController) Login(c *gin.Context) {
+//     loginData, exist := c.Get("loginData")
+//     if !exist {
+//         utils.RespondStanders(c, http.StatusNotFound, "Log in form is required", "Login form not found in context", nil)
+//         return
+//     }
+
+//     status, accessToken, refreshToken, err := uc.userService.Login(loginData)
+//     if err!= nil {
+//         utils.RespondStanders(c, status, "Login failed", err.Error(), nil)
+//         return
+//     }
+// }

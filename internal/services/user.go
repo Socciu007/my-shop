@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"my_shop/internal/models"
+	"net/http"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -32,17 +33,17 @@ func (us *UserService) CreateUser(user *models.Users) (int, error) {
 
     //check exist user already email in database
     if err := us.db.Where("email =?", user.Email).First(&existUser).Error; err == nil {
-        return 400, fmt.Errorf("user already exists")
+        return http.StatusBadRequest, fmt.Errorf("user already exists")
     }
 
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost) 
     if err != nil {
-        return 400, err
+        return http.StatusBadRequest, err
     }
     user.Password = string(hashedPassword)
     user.ID = uuid.New().String()
 
-    return 500, us.db.Create(user).Error
+    return http.StatusInternalServerError, us.db.Create(user).Error
 }
 
 // logic to update a user 
@@ -51,15 +52,15 @@ func (us *UserService) UpdateUser(id string, updateFields models.Users) (models.
 
     // Find user in database by ID
     if err := us.db.Where("id = ?", id).First(&user).Error; err != nil {
-        return user, 400, err
+        return user, http.StatusBadRequest, err
     }
 
     // Update information user from map updateFields
     if err := us.db.Model(&user).Updates(updateFields).Error; err != nil {
-        return user, 500, err
+        return user, http.StatusInternalServerError, err
     }
 
-    return user, 200, nil
+    return user, http.StatusOK, nil
 }
 
 
@@ -68,15 +69,15 @@ func (us *UserService) DeleteUser(id string) (int, error) {
     var user models.Users
     //check if user exists
     if err := us.db.Where("id =?", id).First(&user).Error; err!= nil {
-        return 400, err
+        return http.StatusBadRequest, err
     }
 
     //Delete user from database
     if err := us.db.Where("id =?", id).Delete(&user).Error; err!= nil {
-        return 500, err
+        return http.StatusInternalServerError, err
     }
 
-    return 200, nil
+    return http.StatusOK, nil
 }
 
 // logic to get a user
@@ -91,6 +92,52 @@ func (us *UserService) GetUserByID(id string) (models.Users, error) {
 }
 
 // logic to delete many users
-// func (us *UserService) DeleteManyUsers(userIDs []string) error {
+func (us *UserService) DeleteManyUsers(userIDs []string) (int64, int, error) {
+    result := us.db.Where("id IN ?", userIDs).Delete(&models.Users{})
+    
+    if result.Error != nil {
+        return 0, http.StatusInternalServerError, result.Error
+    }
 
+    return int64(result.RowsAffected), http.StatusOK, nil
+}
+
+// logic to login a user
+type LoginDataType struct {
+    Email    string `json:"email"`
+    Password string `json:"password"`
+}
+
+// func (us *UserService) Login(loginData LoginDataType) (int, string, string, error) {
+//     var user models.Users
+    
+//     // Find user in db by email and check if it exists
+//     if err := us.db.Where("email = ?", loginData.Email).First(&user).Error; err != nil {
+//         return http.StatusBadRequest, "", "", err
+//     }
+
+//     // Compare password from loginData with hashed password in the database
+//     if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err!= nil {
+//         return http.StatusBadRequest, "", "", err
+//     }
+
+//     // // If login is successful, create an access token and return it along with user ID and email
+//     accessToken, err := GenerateAccessToken(PayloadType{
+//         ID:   user.ID,
+//         Role: user.Role,
+//     }, initalize.GetConfig().Security.AccessKey) // Use LoadConfig() to get the AccessKey
+//     if err != nil {
+//         return http.StatusInternalServerError, "", "", err
+//     }
+
+//     refreshToken, err := GenerateRefreshToken(PayloadType{
+//         ID:   user.ID,
+//         Role: user.Role,
+//     }, initalize.GetConfig().Security.RefreshKey)
+//     if err != nil {
+//     // Handle the error, e.g., log it or return it
+//         return http.StatusInternalServerError, "", "", err
+//     }
+
+//     return http.StatusOK, accessToken, refreshToken, nil
 // }
