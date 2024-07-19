@@ -135,16 +135,54 @@ func (uc *UserController) DeleteManyUsers(c *gin.Context) {
 }
 
 // handle request POST /login to login system
-// func (uc *UserController) Login(c *gin.Context) {
-//     loginData, exist := c.Get("loginData")
-//     if !exist {
-//         utils.RespondStanders(c, http.StatusNotFound, "Log in form is required", "Login form not found in context", nil)
-//         return
-//     }
+func (uc *UserController) Login(c *gin.Context) {
+    loginData, exist := c.Get("loginData")
+    if !exist {
+        utils.RespondStanders(c, http.StatusNotFound, "Log in form is required", "Login form not found in context", nil)
+        return
+    }
 
-//     status, accessToken, refreshToken, err := uc.userService.Login(loginData)
-//     if err!= nil {
-//         utils.RespondStanders(c, status, "Login failed", err.Error(), nil)
-//         return
-//     }
-// }
+    status, _, refreshToken, err := uc.userService.Login(loginData.(services.LoginDataType))
+    if err!= nil {
+        utils.RespondStanders(c, status, "Login failed", err.Error(), nil)
+        return
+    }
+
+    // Set the refresh token cookie
+    cookie := &http.Cookie{
+        Name: "refresh_token",
+        Value: refreshToken,
+        Path: "/",
+        HttpOnly: true,
+        SameSite: http.SameSiteStrictMode,
+    }
+    http.SetCookie(c.Writer, cookie)
+
+    utils.RespondStanders(c, status, "Login successful", "", nil)
+}
+
+// handle request POST /logout to logout system
+func (uc *UserController) Logout(c *gin.Context) {
+    // Clear the refresh token cookie
+    cookie := &http.Cookie{
+        Name:   "refresh_token",
+        Value:  "",
+        Path:   "/",
+        MaxAge: -1, // Set MaxAge to -1 to expire the cookie immediately
+        HttpOnly: true,
+        SameSite: http.SameSiteStrictMode,
+    }
+    http.SetCookie(c.Writer, cookie)
+
+    // Respond with a success message
+    utils.RespondStanders(c, http.StatusOK, "Logged out successfully", "", nil)
+}
+
+// handle request POST /refresh-token to refresh the access token
+func (uc *UserController) RefreshAccessToken(c *gin.Context) {
+    token, err := c.Request.Cookie("refresh_token")
+    if err != nil || token == nil || token.Value == "" {
+        utils.RespondStanders(c, http.StatusNotFound, "Refresh token is required", "Refresh token not found", nil)
+        return
+    }
+}

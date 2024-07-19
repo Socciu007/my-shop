@@ -2,9 +2,11 @@ package services
 
 import (
 	"fmt"
+	"my_shop/global"
 	"my_shop/internal/models"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -108,36 +110,67 @@ type LoginDataType struct {
     Password string `json:"password"`
 }
 
-// func (us *UserService) Login(loginData LoginDataType) (int, string, string, error) {
-//     var user models.Users
+func (us *UserService) Login(loginData LoginDataType) (int, string, string, error) {
+    var user models.Users
     
-//     // Find user in db by email and check if it exists
-//     if err := us.db.Where("email = ?", loginData.Email).First(&user).Error; err != nil {
-//         return http.StatusBadRequest, "", "", err
-//     }
+    // Find user in db by email and check if it exists
+    if err := us.db.Where("email = ?", loginData.Email).First(&user).Error; err != nil {
+        return http.StatusBadRequest, "", "", err
+    }
 
-//     // Compare password from loginData with hashed password in the database
-//     if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err!= nil {
-//         return http.StatusBadRequest, "", "", err
-//     }
+    // Compare password from loginData with hashed password in the database
+    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err!= nil {
+        return http.StatusBadRequest, "", "", err
+    }
 
-//     // // If login is successful, create an access token and return it along with user ID and email
-//     accessToken, err := GenerateAccessToken(PayloadType{
-//         ID:   user.ID,
-//         Role: user.Role,
-//     }, initalize.GetConfig().Security.AccessKey) // Use LoadConfig() to get the AccessKey
-//     if err != nil {
-//         return http.StatusInternalServerError, "", "", err
-//     }
+    // // If login is successful, create an access token and return it along with user ID and email
+    accessToken, err := GenerateAccessToken(PayloadType{
+        ID:   user.ID,
+        Role: user.Role,
+    }, global.Config.Security.AccessKey) // Use LoadConfig() to get the AccessKey
+    if err != nil {
+        return http.StatusInternalServerError, "", "", err
+    }
 
-//     refreshToken, err := GenerateRefreshToken(PayloadType{
-//         ID:   user.ID,
-//         Role: user.Role,
-//     }, initalize.GetConfig().Security.RefreshKey)
-//     if err != nil {
-//     // Handle the error, e.g., log it or return it
-//         return http.StatusInternalServerError, "", "", err
-//     }
+    refreshToken, err := GenerateRefreshToken(PayloadType{
+        ID:   user.ID,
+        Role: user.Role,
+    }, global.Config.Security.RefreshKey)
+    if err != nil {
+    // Handle the error, e.g., log it or return it
+        return http.StatusInternalServerError, "", "", err
+    }
 
-//     return http.StatusOK, accessToken, refreshToken, nil
-// }
+    return http.StatusOK, accessToken, refreshToken, nil
+}
+
+// logic to refresh a user's access token
+func (us *UserService) RefreshAccessToken(refreshToken string) (int, string, error) {
+    // Define the JWT claims struct to hold the payload
+    var payload PayloadType
+
+    // Extract the payload from the refresh token
+    token, err := jwt.ParseWithClaims(refreshToken, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+        return []byte(global.Config.Security.RefreshKey), nil
+    })
+
+    if err != nil {
+        return http.StatusUnauthorized, "", err
+    }
+
+    // Validate the token and extract the claims
+    if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
+        // Extract the payload from the claims
+        payload.ID = (*claims)["id"].(string)
+        payload.Role = (*claims)["role"].(string)
+        accessToken, err := GenerateAccessToken(payload, global.Config.Security.AccessKey)
+        
+        if err != nil {
+            return http.StatusInternalServerError, "", err
+        }
+
+        return http.StatusOK, accessToken, nil
+    } else {
+        return http.StatusInternalServerError, "", nil
+    }
+}

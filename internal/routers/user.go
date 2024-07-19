@@ -20,6 +20,8 @@ func UserRouter(r *gin.Engine, db *gorm.DB) {
 		userGroup.GET("/get-user/:id", userController.GetUserByID)
 		userGroup.POST("/create-user", middlewares.ValidationUser(), userController.CreateUser)
 		userGroup.POST("/delete-users", userController.DeleteManyUsers)
+		userGroup.POST("/login", middlewares.ValidationCredentials(), userController.Login)
+		userGroup.POST("/logout", userController.Logout)
 		userGroup.PATCH("/update-user/:id", userController.UpdateUser)
 		userGroup.DELETE("/delete-user/:id", userController.DeleteUser)
 	}
