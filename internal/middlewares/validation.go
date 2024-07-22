@@ -1,14 +1,15 @@
 package middlewares
 
 import (
-	"fmt"
 	"my_shop/internal/models"
 	"my_shop/internal/utils"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 var validate *validator.Validate
@@ -17,52 +18,64 @@ var validate *validator.Validate
 func ValidationUser() gin.HandlerFunc {
     return func(c *gin.Context) {
         var user models.Users
-        var confirm struct {
-            ConfirmPassword string `json:"confirmPassword"`
-        }
+        var confirmPassword string
 
         validate := validator.New()
 
+        // Check if the request body is empty
+        if c.Request.Body == nil {
+            utils.RespondStanders(c, http.StatusBadRequest, "Request body is required", "Request body is empty", nil)
+            c.Abort()
+            return
+        }
+
         // Bind and validate user and ConfirmPassword fields
-        if err := c.ShouldBindJSON(&struct {
+        var requestBody struct {
             models.Users
             ConfirmPassword string `json:"confirmPassword"`
-        }{
-            user,
-            confirm.ConfirmPassword,
-        }); err != nil {
+        }
+
+        if err := c.ShouldBindJSON(&requestBody); err != nil {
             utils.RespondStanders(c, http.StatusBadRequest, "Invalid request payload", err.Error(), nil)
             c.Abort()
             return
         }
 
-        fmt.Printf("%v \n", user)
+        user = requestBody.Users
+        confirmPassword = requestBody.ConfirmPassword
 
-        // Add condition check for confirmPassword with Password
-        if user.Password != confirm.ConfirmPassword {
-            utils.RespondStanders(c, http.StatusBadRequest, "Password and ConfirmPassword need to match", "Password and ConfirmPassword do not match", nil)
+        // Check if Password matches ConfirmPassword
+        if user.Password != confirmPassword {
+            utils.RespondStanders(c, http.StatusBadRequest, "Passwords do not match", "Password and ConfirmPassword do not match", nil)
             c.Abort()
             return
         }
 
         // Validate user struct
-        if err := validate.Struct(user); err != nil {
+        if err := validate.Struct(&user); err != nil {
             utils.RespondStanders(c, http.StatusBadRequest, "Error validate user", err.Error(), nil)
             c.Abort()
             return
         }
+
+        if user.Username == "" {
+            user.Username = user.Email[:strings.Index(user.Email, "@")]
+        }
+
+        user.ID = uuid.New().String()
 
         c.Set("validatedUser", user)
         c.Next()
     }
 }
 
+type LoginDataType struct {
+    Email string `json:"email" binding:"required"`
+    Password string `json:"password" binding:"required"`
+}
 func ValidationCredentials() gin.HandlerFunc {
     return func(c *gin.Context) {
-        var loginData struct {
-            Email string `json:"email" binding:"required"`
-            Password string `json:"password" binding:"required"`
-        }
+        var loginData LoginDataType
         
         if err := c.ShouldBindJSON(&loginData); err!= nil {
             utils.RespondStanders(c, http.StatusBadRequest, "The input is required", err.Error(), nil)
@@ -70,8 +83,9 @@ func ValidationCredentials() gin.HandlerFunc {
             return
         }
 
+        
         // Validate email (alphanumeric, 3-30 characters)
-		emailRegex := regexp.MustCompile(`^[a-zA-Z0-9]{3,30}$`)
+		emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 		if !emailRegex.MatchString(loginData.Email) {
 			utils.RespondStanders(c, http.StatusBadRequest, "Usermail must be email", "Invalid email format", nil)
             c.Abort()

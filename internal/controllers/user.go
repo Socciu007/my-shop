@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"my_shop/internal/middlewares"
 	"my_shop/internal/models"
 	"my_shop/internal/services"
 	"my_shop/internal/utils"
@@ -142,7 +143,9 @@ func (uc *UserController) Login(c *gin.Context) {
         return
     }
 
-    status, _, refreshToken, err := uc.userService.Login(loginData.(services.LoginDataType))
+    login,_ := loginData.(middlewares.LoginDataType)
+
+    status, _, refreshToken, err := uc.userService.Login(login)
     if err!= nil {
         utils.RespondStanders(c, status, "Login failed", err.Error(), nil)
         return

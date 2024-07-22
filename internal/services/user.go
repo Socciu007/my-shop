@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"my_shop/global"
+	"my_shop/internal/middlewares"
 	"my_shop/internal/models"
 	"net/http"
 
@@ -38,14 +39,21 @@ func (us *UserService) CreateUser(user *models.Users) (int, error) {
         return http.StatusBadRequest, fmt.Errorf("user already exists")
     }
 
+    // Check if a user with the provided ID already exists, and generate a new ID if necessary
+	for {
+		if err := us.db.Where("id = ?", user.ID).First(&existUser).Error; err == gorm.ErrRecordNotFound {
+			break
+		}
+		user.ID = uuid.New().String()
+	}
+
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost) 
     if err != nil {
         return http.StatusBadRequest, err
     }
     user.Password = string(hashedPassword)
-    user.ID = uuid.New().String()
 
-    return http.StatusInternalServerError, us.db.Create(user).Error
+    return http.StatusInternalServerError, us.db.Create(&user).Error
 }
 
 // logic to update a user 
@@ -56,6 +64,12 @@ func (us *UserService) UpdateUser(id string, updateFields models.Users) (models.
     if err := us.db.Where("id = ?", id).First(&user).Error; err != nil {
         return user, http.StatusBadRequest, err
     }
+
+    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(updateFields.Password), bcrypt.DefaultCost) 
+    if err != nil {
+        return user, http.StatusBadRequest, err
+    }
+    updateFields.Password = string(hashedPassword)
 
     // Update information user from map updateFields
     if err := us.db.Model(&user).Updates(updateFields).Error; err != nil {
@@ -105,12 +119,7 @@ func (us *UserService) DeleteManyUsers(userIDs []string) (int64, int, error) {
 }
 
 // logic to login a user
-type LoginDataType struct {
-    Email    string `json:"email"`
-    Password string `json:"password"`
-}
-
-func (us *UserService) Login(loginData LoginDataType) (int, string, string, error) {
+func (us *UserService) Login(loginData middlewares.LoginDataType) (int, string, string, error) {
     var user models.Users
     
     // Find user in db by email and check if it exists

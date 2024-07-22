@@ -9,7 +9,7 @@ import (
 type Users struct {
 	gorm.Model
     ID        string    `gorm:"primaryKey"`
-    Username  string    `gorm:"unique;not null" json:"username" validate:"required,min=5,max=50"`
+    Username  string    `gorm:"null" json:"username" validate:"max=50"`
     Email     string    `gorm:"unique;not null" json:"email" validate:"required,email"`
     Password  string    `gorm:"not null" json:"password" validate:"required,min=8"`
     Role      string    `gorm:"default:Customer"`
