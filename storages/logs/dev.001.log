@@ -1,0 +1,4 @@
+{"level":"INFO","time":"2024-07-23T10:05:06.650+0800","caller":"initalize/run.go:17","msg":"Config Log OK!!","ok":"success"}
+{"level":"INFO","time":"2024-07-23T10:20:06.395+0800","caller":"initalize/run.go:17","msg":"Config Log OK!!","ok":"success"}
+{"level":"INFO","time":"2024-07-23T10:24:04.735+0800","caller":"middlewares/logger.go:30","msg":"Logging request","method":"POST","url":"/api/user/login","client_ip":"127.0.0.1","status_code":200,"duration":0.0536956}
+{"level":"INFO","time":"2024-07-23T10:24:40.937+0800","caller":"middlewares/logger.go:30","msg":"Logging request","method":"POST","url":"/api/user/login","client_ip":"127.0.0.1","status_code":400,"duration":0.0532384}

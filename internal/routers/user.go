@@ -2,16 +2,16 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
+	"my_shop/global"
 	"my_shop/internal/controllers"
 	"my_shop/internal/middlewares"
 	"my_shop/internal/services"
 )
 
-func UserRouter(r *gin.Engine, db *gorm.DB) {
+func UserRouter(r *gin.Engine) {
 
-	userService := services.NewUserService(db)
+	userService := services.NewUserService(global.GetDB)
 	userController := controllers.NewUserController(&userService)
 
 	userGroup := r.Group("/api/user")

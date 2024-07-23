@@ -1,14 +1,14 @@
 package middlewares
 
 import (
-	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // logs details of each incoming request and response
-func Logger() gin.HandlerFunc {
+func LoggerMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
         // Start time
 		startTime := time.Now()
@@ -26,16 +26,13 @@ func Logger() gin.HandlerFunc {
 		// Get client IP address
 		clientIP := c.ClientIP()
 
-		// Log format
-		log.Printf("%s - [%s] \"%s %s %s\" %d %s \"%s\"",
-			clientIP,
-			startTime.Format(time.RFC1123),
-			c.Request.Method,
-			c.Request.RequestURI,
-			c.Request.Proto,
-			statusCode,
-			latency,
-			c.Request.UserAgent(),
+		// Log details about the request
+		logger.Info("Logging request",
+			zap.String("method", c.Request.Method),
+			zap.String("url", c.Request.URL.Path),
+			zap.String("client_ip", clientIP),
+			zap.Int("status_code", statusCode),
+            zap.Duration("duration", latency),
 		)
     }
 }

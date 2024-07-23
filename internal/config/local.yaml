@@ -15,3 +15,10 @@ mysql:
 mongodb:
   uri: mongodb://localhost:27017/myshop
 
+logger:
+  loglevel: debug
+  filename: "./storages/logs/dev.001.log"
+  maxsize: 500
+  maxbackups: 3
+  maxage: 28
+  compress: true

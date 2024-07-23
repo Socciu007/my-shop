@@ -1,10 +1,20 @@
 package setting
 
 type Config struct {
+	Logger   LoggerConfig    `mapstructure:"logger"`
 	Mysql    MysqlConfig     `mapstructure:"mysql"`
 	MongoDB  MongoConfig     `mapstructure:"mongodb"`
 	Security SercurityConfig `mapstructure:"security"`
 	Server   SercurityConfig `mapstructure:"server"`
+}
+
+type LoggerConfig struct {
+	LogLevel   string `mapstructure:"loglevel"`
+	Filename   string `mapstructure:"filename"`
+	MaxSize    int    `mapstructure:"maxsize"`
+	MaxBackups int    `mapstructure:"maxbackups"`
+	MaxAge     int    `mapstructure:"maxage"`
+	Compress   bool   `mapstructure:"compress"`
 }
 
 type MysqlConfig struct {

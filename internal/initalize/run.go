@@ -12,9 +12,10 @@ func Run() {
 	// load configuration
 	LoadConfig()
 	InitLogger()
+
 	sqlService := InitMySQL()
-	getDb := sqlService.GetDB()
-	models.InitializeDB(getDb)
+	global.GetDB = sqlService.GetDB()
+	models.InitializeDB(global.GetDB)
 
 	mongoService := InitMongoDB()
 
@@ -30,6 +31,6 @@ func Run() {
 	}()
 
 	port := global.Config.Server.Port
-	r := routers.SetupRouter(getDb)
+	r := routers.SetupRouter()
 	r.Run(":" + fmt.Sprintf("%d", port))
 }
