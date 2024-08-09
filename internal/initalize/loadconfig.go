@@ -24,11 +24,11 @@ func LoadConfig() {
 	fmt.Println("Server port:: ", v.GetInt("server.port"))
 
 	// configure structure
-    var config setting.Config
+  var config setting.Config
 	if err := v.Unmarshal(&config); err != nil {
 		panic(fmt.Errorf("unable to decode configuration: %v", err))
 	}
 
 	// Assign the loaded configuration to the global.Config variable
-    global.Config = config
+  global.Config = config
 }

@@ -22,3 +22,8 @@ logger:
   maxbackups: 3
   maxage: 28
   compress: true
+
+redis:
+  addr: localhost:6379
+  password: ""
+  db: 0

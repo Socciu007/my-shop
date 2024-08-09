@@ -11,13 +11,25 @@ import (
 func Run() {
 	// load configuration
 	LoadConfig()
+
+	// Initialize logger
 	InitLogger()
 
+	// Initialize MySQL
 	sqlService := InitMySQL()
 	global.GetDB = sqlService.GetDB()
 	models.InitializeDB(global.GetDB)
 
+	// Initialize MongoDB
 	mongoService := InitMongoDB()
+
+	// Initialize redis service
+	InitRedis()
+
+	// Check Redis connection
+	if !CheckRedisConnection() {
+		log.Fatal("Failed to connect to Redis")
+	}
 
 	// Close connections when done
 	defer func() {

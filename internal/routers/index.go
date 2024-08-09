@@ -3,6 +3,7 @@ package routers
 import (
 	"my_shop/global"
 	"my_shop/internal/middlewares"
+	"my_shop/internal/routers/v1"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ func SetupRouter() *gin.Engine {
 	// Register sub router
 	PingRouter(router)
 	UserRouter(router)
-	V1Router(router)
+	v1.V1Router(router)
 
 	return router
 }
