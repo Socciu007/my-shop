@@ -1,5 +1,12 @@
 # Simple Makefile for a Go project
 
+# Determine the executable name based on the OS
+ifeq ($(OS),Windows_NT)
+    EXE_NAME := main.exe
+else
+    EXE_NAME := main
+endif
+
 # Build the application
 all: build
 
@@ -7,7 +14,7 @@ build:
 	@echo "Building..."
 	
 	
-	@go build -o main cmd/api/main.go
+	@go build -o $(EXE_NAME) cmd/server/main.go
 
 # Run the application
 run:

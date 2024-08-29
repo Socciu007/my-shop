@@ -24,6 +24,6 @@ logger:
   compress: true
 
 redis:
-  addr: localhost:6379
-  password: ""
+  addr: redis-13314.c1.asia-northeast1-1.gce.redns.redis-cloud.com:13314
+  password: A3HP3clCHRuqnqW71pGK1s4AvJGKjgRu
   db: 0
